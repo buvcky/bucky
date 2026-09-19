@@ -1,1 +1,1 @@
-http://bucky.opik.net/
+Why are you here?
