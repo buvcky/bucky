@@ -1,2 +1,1 @@
-# my-website
-die Website
+# bucky
