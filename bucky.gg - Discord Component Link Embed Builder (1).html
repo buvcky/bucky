@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bucky.opik.net | صانع روابط الإيمبيد والأزرار لـ Discord</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Cairo & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        discord: ['Inter', 'gg sans', 'sans-serif']
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#616afc',
+                            hover: '#4f56e2',
+                            light: '#818cf8',
+                            dark: '#0a0d14',
+                            panel: '#121723',
+                            border: '#1e2638'
+                        },
+                        discord: {
+                            bg: '#313338',
+                            embedBg: '#2b2d31',
+                            border: '#3f4147',
+                            textMuted: '#949ba4',
+                            textLight: '#dbdee1',
+                            link: '#00a8fc'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #080b11; color: #f3f4f6; }
+        .discord-font { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #080b11; }
+        ::-webkit-scrollbar-thumb { background: #1e2638; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #616afc; }
+        
+        .glow-brand { box-shadow: 0 0 25px -5px rgba(97, 106, 252, 0.35); }
+        .preview-markdown strong { color: #ffffff; font-weight: 700; }
+        .preview-markdown em { font-style: italic; color: #e0e0e0; }
+        .preview-markdown del { text-decoration: line-through; opacity: 0.7; }
+        .preview-markdown code { background: #1e1f22; padding: 2px 4px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #616afc; }
+        .preview-markdown a { color: #00a8fc; text-decoration: underline; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-[#616afc] selection:text-white">
+
+    <header class="border-b border-brand-border bg-[#0a0d14]/90 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#616afc] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#616afc]/30">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl font-black tracking-wider text-white">bucky<span class="text-[#616afc]">.opik.net</span></span>
+                        <span class="bg-[#616afc]/20 text-[#818cf8] border border-[#616afc]/40 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">V2 PRO</span>
+                    </div>
+                    <p class="text-[11px] text-zinc-400 font-medium">صانع روابط الإيمبيد والأزرار السريعة</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="flex items-center gap-2">
+                <button onclick="openJsonModal('import')" class="bg-brand-panel hover:bg-brand-border border border-brand-border text-zinc-300 text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-import text-amber-400"></i>
+                    <span class="hidden sm:inline">استيراد</span>
+                </button>
+                <button onclick="openJsonModal('export')" class="bg-brand-panel hover:bg-brand-border border border-brand-border text-zinc-300 text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-export text-sky-400"></i>
+                    <span class="hidden sm:inline">تصدير</span>
+                </button>
+                <button onclick="resetToDefaults()" class="bg-brand-panel hover:bg-brand-border border border-brand-border text-rose-400 text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden sm:inline">إعادة ضبط</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="bg-brand-panel/60 border-b border-brand-border">
+        <div class="max-w-7xl mx-auto px-4 flex items-center gap-2 overflow-x-auto py-2 text-xs font-bold scrollbar-none">
+            <button onclick="switchCategory('text')" id="nav-text" class="nav-btn px-4 py-2 rounded-xl bg-[#616afc] text-white flex items-center gap-2 flex-shrink-0 transition">
+                <i class="fa-solid fa-font"></i> 1. الكتابة والنصوص
+            </button>
+            <button onclick="switchCategory('media')" id="nav-media" class="nav-btn px-4 py-2 rounded-xl bg-brand-panel border border-brand-border text-zinc-400 hover:text-white flex items-center gap-2 flex-shrink-0 transition">
+                <i class="fa-solid fa-image"></i> 2. الصور والوسائط
+            </button>
+            <button onclick="switchCategory('buttons')" id="nav-buttons" class="nav-btn px-4 py-2 rounded-xl bg-brand-panel border border-brand-border text-zinc-400 hover:text-white flex items-center gap-2 flex-shrink-0 transition">
+                <i class="fa-solid fa-square-plus text-[#818cf8]"></i> 3. أزرار التفاعل V2
+            </button>
+            <button onclick="switchCategory('fields')" id="nav-fields" class="nav-btn px-4 py-2 rounded-xl bg-brand-panel border border-brand-border text-zinc-400 hover:text-white flex items-center gap-2 flex-shrink-0 transition">
+                <i class="fa-solid fa-list-check text-amber-400"></i> 4. الحقول الكلاسيكية V1
+            </button>
+            <button onclick="switchCategory('footer')" id="nav-footer" class="nav-btn px-4 py-2 rounded-xl bg-brand-panel border border-brand-border text-zinc-400 hover:text-white flex items-center gap-2 flex-shrink-0 transition">
+                <i class="fa-solid fa-clock"></i> 5. التذييل والوقت
+            </button>
+        </div>
+    </nav>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Controls Sections -->
+        <section class="lg:col-span-6 space-y-5">
+
+            <!-- Presets Row -->
+            <div class="bg-brand-panel border border-brand-border rounded-2xl p-3.5 flex items-center justify-between gap-2 overflow-x-auto text-xs">
+                <span class="text-zinc-400 font-bold flex items-center gap-1.5 flex-shrink-0">
+                    <i class="fa-solid fa-wand-magic-sparkles text-[#616afc]"></i> النماذج:
+                </span>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button onclick="loadPreset('default')" class="bg-brand-dark hover:bg-brand-border px-3 py-1.5 rounded-lg border border-brand-border text-zinc-300 transition">الافتراضي</button>
+                    <button onclick="loadPreset('community')" class="bg-brand-dark hover:bg-brand-border px-3 py-1.5 rounded-lg border border-brand-border text-zinc-300 transition">مجتمع ودعوة</button>
+                    <button onclick="loadPreset('store')" class="bg-brand-dark hover:bg-brand-border px-3 py-1.5 rounded-lg border border-brand-border text-zinc-300 transition">متجر ومبيعات</button>
+                    <button onclick="loadPreset('social')" class="bg-brand-dark hover:bg-brand-border px-3 py-1.5 rounded-lg border border-brand-border text-zinc-300 transition">سوشيال ميديا</button>
+                </div>
+            </div>
+
+            <!-- SECTION 1: TEXT & CONTENT -->
+            <div id="section-text" class="category-section bg-brand-panel border border-brand-border rounded-2xl p-5 space-y-4">
+                <h2 class="text-sm font-extrabold text-[#818cf8] border-b border-brand-border pb-2.5 flex items-center gap-2">
+                    <i class="fa-solid fa-font"></i> قسم الكتابة والنصوص المنفصل
+                </h2>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-zinc-400 mb-1">عنوان الإيمبيد الرئيسي (Title)</label>
+                        <input type="text" id="embedTitle" value="سيرفر مجتمع bucky - أهلاً بكم!" 
+                            class="w-full bg-brand-dark border border-brand-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#616afc] transition font-bold">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-zinc-400 mb-1">رابط العنوان (Title URL)</label>
+                        <input type="text" id="embedTitleUrl" value="http://bucky.opik.net/" placeholder="http://..." dir="ltr"
+                            class="w-full bg-brand-dark border border-brand-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#616afc] transition font-mono">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-zinc-400 mb-1">اسم الكاتب/الجهة (Author Name)</label>
+                        <input type="text" id="embedAuthor" value="إدارة السيرفر الرسمية" 
+                            class="w-full bg-brand-dark border border-brand-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#616afc] transition">
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block font-bold text-zinc-400">الوصف (Description)</label>
+                            <div class="flex items-center gap-1 text-[11px]">
+                                <button onclick="insertMarkdown('**', '**')" class="bg-brand-dark px-2 py-0.5 rounded border border-brand-border font-bold">B</button>
+                                <button onclick="insertMarkdown('*', '*')" class="bg-brand-dark px-2 py-0.5 rounded border border-brand-border italic">I</button>
+                                <button onclick="insertMarkdown('`', '`')" class="bg-brand-dark px-2 py-0.5 rounded border border-brand-border font-mono">`C`</button>
+                            </div>
+                        </div>
+                        <textarea id="embedDescription" rows="4" 
+                            class="w-full bg-brand-dark border border-brand-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#616afc] transition leading-relaxed">مرحباً بكم في مجتمعنا! استخدم الأزرار التفاعلية أدناه للانتقال السريع إلى السيرفر أو الموقع الرسمي بكفاءة وسرعة عالية.</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: MEDIA & VISUALS -->
+            <div id="section-media" class="category-section bg-brand-panel border border-brand-border rounded-2xl p-5 space-y-4 hidden">
+                <h2 class="text-sm font-extrabold text-[#818cf8] border-b border-brand-border pb-2.5 flex items-center gap-2">
+                    <i class="fa-solid fa-image"></i> قسم الصور والوسائط المنفصل
+                </h2>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-zinc-400 mb-1">لون الشريط الجانبي (Theme Color)</label>
+                        <div class="flex items-center gap-3">
+                            <input type="color" id="embedColorPicker" value="#616afc" class="w-10 h-10 rounded-xl cursor-pointer bg-brand-dark border border-brand-border p-1">
+                            <input type="text" id="embedColorHex" value="#616afc" dir="ltr" 
+                                class="w-28 bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#616afc] font-mono text-center font-bold">
+                            
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="setPresetColor('#616afc')" class="w-6 h-6 rounded-lg bg-[#616afc]" title="العلامة التجارية"></button>
+                                <button onclick="setPresetColor('#5865F2')" class="w-6 h-6 rounded-lg bg-[#5865F2]" title="ديسكورد"></button>
+                                <button onclick="setPresetColor('#22c55e')" class="w-6 h-6 rounded-lg bg-[#22c55e]" title="أخضر"></button>
+                                <button onclick="setPresetColor('#eab308')" class="w-6 h-6 rounded-lg bg-[#eab308]" title="أصفر"></button>
+                                <button onclick="setPresetColor('#ef4444')" class="w-6 h-6 rounded-lg bg-[#ef4444]" title="أحمر"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-zinc-400 mb-1">رابط صورة رمز الكاتب (Author Icon)</label>
+                        <input type="text" id="embedAuthorIcon" value="https://em-content.zobj.net/source/microsoft-teams/337/high-voltage_26a1.png" dir="ltr"
+                            class="w-full bg-brand-dark border border-brand-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#616afc] transition font-mono text-[11px]">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-zinc-400 mb-1">رابط الصورة المصغرة (Thumbnail URL)</label>
+                        <input type="text" id="embedThumbnail" value="https://em-content.zobj.net/source/microsoft-teams/337/high-voltage_26a1.png" dir="ltr"
+                            class="w-full bg-brand-dark border border-brand-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#616afc] transition font-mono text-[11px]">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-zinc-400 mb-1">رابط البنر/الصورة الكبيرة (Banner URL)</label>
+                        <input type="text" id="embedBanner" value="https://placehold.co/600x200/121723/616afc?text=bucky.opik.net+V2+Embed" dir="ltr"
+                            class="w-full bg-brand-dark border border-brand-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#616afc] transition font-mono text-[11px]">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: V2 BUTTONS -->
+            <div id="section-buttons" class="category-section bg-brand-panel border border-brand-border rounded-2xl p-5 space-y-4 hidden">
+                <div class="flex items-center justify-between border-b border-brand-border pb-2.5">
+                    <h2 class="text-sm font-extrabold text-[#818cf8] flex items-center gap-2">
+                        <i class="fa-solid fa-square-plus"></i> أزرار التوجيه المباشرة (V2 Link Buttons)
+                    </h2>
+                    <button onclick="addButton()" class="bg-[#616afc] hover:bg-[#4f56e2] text-white font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> إضافة زر
+                    </button>
+                </div>
+
+                <div id="buttonsContainer" class="space-y-3">
+                    <!-- Dynamic Buttons -->
+                </div>
+            </div>
+
+            <!-- SECTION 4: CLASSIC V1 FIELDS -->
+            <div id="section-fields" class="category-section bg-brand-panel border border-brand-border rounded-2xl p-5 space-y-4 hidden">
+                <div class="flex items-center justify-between border-b border-brand-border pb-2.5">
+                    <h2 class="text-sm font-extrabold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> الحقول الكلاسيكية (Embed Fields V1)
+                    </h2>
+                    <button onclick="addField()" class="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> إضافة حقل
+                    </button>
+                </div>
+
+                <div id="fieldsContainer" class="space-y-3">
+                    <!-- Dynamic Fields -->
+                </div>
+            </div>
+
+            <!-- SECTION 5: FOOTER & TIMESTAMP -->
+            <div id="section-footer" class="category-section bg-brand-panel border border-brand-border rounded-2xl p-5 space-y-4 hidden">
+                <h2 class="text-sm font-extrabold text-[#818cf8] border-b border-brand-border pb-2.5 flex items-center gap-2">
+                    <i class="fa-solid fa-clock"></i> قسم التذييل والوقت
+                </h2>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-zinc-400 mb-1">نص التذييل (Footer Text)</label>
+                        <input type="text" id="embedFooter" value="مقدم من bucky.opik.net • اضغط الأزرار للانتقال" 
+                            class="w-full bg-brand-dark border border-brand-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-[#616afc]">
+                    </div>
+
+                    <div class="pt-2">
+                        <label class="flex items-center gap-2 cursor-pointer text-zinc-300 font-bold select-none">
+                            <input type="checkbox" id="embedTimestampToggle" checked class="w-4 h-4 rounded accent-[#616afc]">
+                            <span>تفعيل وإظهار التوقيت الزمني (Timestamp)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="lg:col-span-6 space-y-5">
+
+            <div class="bg-gradient-to-br from-brand-panel via-brand-panel to-[#616afc]/20 border-2 border-[#616afc] rounded-2xl p-5 shadow-2xl space-y-3.5 glow-brand">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-[#818cf8] uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-link text-base text-[#616afc]"></i> الرابط النهائي المباشر لـ Discord
+                    </span>
+                    <span class="bg-[#616afc] text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">جاهز 100%</span>
+                </div>
+
+                <p class="text-xs text-zinc-300 leading-relaxed">
+                    انسخ هذا الرابط والصقه مباشرة في أي شات أو روم داخل ديسكورد ليظهر الإيمبيد والأزرار فوراً:
+                </p>
+
+                <!-- Clean Single Link Box -->
+                <div class="bg-brand-dark p-3 rounded-xl border border-brand-border flex items-center justify-between gap-2 font-mono text-xs text-[#818cf8] break-all select-all" dir="ltr" id="finalWorkingUrl">
+                    http://bucky.opik.net/#data=...
+                </div>
+
+                <div class="flex items-center gap-2 pt-1">
+                    <button onclick="copyFinalWorkingUrl()" class="flex-1 bg-[#616afc] hover:bg-[#4f56e2] text-white font-extrabold text-xs py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#616afc]/30">
+                        <i class="fa-solid fa-copy text-sm"></i> نسخ الرابط النهائي المباشر
+                    </button>
+                    <a id="testDirectLinkBtn" href="#" target="_blank" class="bg-brand-dark hover:bg-brand-border text-zinc-300 border border-brand-border font-bold text-xs px-4 py-3 rounded-xl transition flex items-center gap-1.5" title="تجربة فتح الرابط">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>معاينة</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-brand-panel border border-brand-border rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between border-b border-brand-border pb-3">
+                    <span class="text-xs font-bold text-zinc-400 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> المعاينة الحية في ديسكورد (Live Preview)
+                    </span>
+                    <span class="text-[10px] text-zinc-500 font-mono">Dark Theme</span>
+                </div>
+
+                <!-- Discord Message Shell -->
+                <div class="bg-[#313338] rounded-xl p-4 text-discord-textLight discord-font border border-discord-border shadow-2xl">
+                    <div class="flex items-start gap-3">
+                        <!-- Avatar -->
+                        <div class="w-10 h-10 rounded-full bg-[#616afc] flex items-center justify-center text-white font-black text-lg flex-shrink-0 shadow">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <!-- Header -->
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-bold text-white text-sm hover:underline cursor-pointer">bucky Bot</span>
+                                <span class="bg-[#5865F2] text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                    <i class="fa-solid fa-check text-[8px]"></i> BOT
+                                </span>
+                                <span class="text-[11px] text-discord-textMuted">اليوم في الساعة 12:00 م</span>
+                            </div>
+
+                            <p class="text-xs text-discord-textLight mt-1">الرسالة التفاعلية عبر رابط <span class="text-discord-link hover:underline cursor-pointer font-mono">bucky.opik.net</span>:</p>
+
+                            <!-- Discord Embed Card -->
+                            <div id="previewEmbedCard" class="mt-2 bg-[#2b2d31] border-r-4 rounded-md p-3.5 max-w-lg shadow-md space-y-2.5" style="border-right-color: #616afc;">
+                                
+                                <!-- Author -->
+                                <div id="previewAuthorBox" class="flex items-center gap-2">
+                                    <img id="previewAuthorImg" src="" class="w-5 h-5 rounded-full object-cover">
+                                    <span id="previewAuthorText" class="text-xs font-bold text-white"></span>
+                                </div>
+
+                                <!-- Title & Description -->
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="space-y-1 flex-1">
+                                        <a id="previewTitle" href="#" target="_blank" class="font-bold text-white text-sm hover:underline hover:text-discord-link transition block"></a>
+                                        <div id="previewDescription" class="text-xs text-discord-textLight leading-relaxed whitespace-pre-line preview-markdown"></div>
+                                    </div>
+                                    <div id="previewThumbnailBox" class="flex-shrink-0">
+                                        <img id="previewThumbnailImg" src="" class="w-16 h-16 rounded-md object-cover bg-brand-dark border border-brand-border">
+                                    </div>
+                                </div>
+
+                                <!-- Fields Grid -->
+                                <div id="previewFieldsGrid" class="grid grid-cols-12 gap-2 pt-1 text-xs hidden"></div>
+
+                                <!-- Banner -->
+                                <div id="previewBannerBox" class="pt-1">
+                                    <img id="previewBannerImg" src="" class="w-full rounded-md object-cover max-h-48 border border-brand-border">
+                                </div>
+
+                                <!-- Footer -->
+                                <div id="previewFooterBox" class="text-[10px] text-discord-textMuted pt-1 border-t border-zinc-800/60 flex items-center justify-between">
+                                    <span id="previewFooterText"></span>
+                                    <span id="previewTimestampText">اليوم في 12:00 م</span>
+                                </div>
+                            </div>
+
+                            <!-- Interactive V2 Buttons List -->
+                            <div id="previewButtonsList" class="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg"></div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <div id="jsonModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-brand-panel border border-brand-border rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-brand-border pb-3">
+                <h3 id="jsonModalTitle" class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-code text-[#616afc]"></i> استيراد / تصدير بيانات JSON
+                </h3>
+                <button onclick="closeJsonModal()" class="text-zinc-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <textarea id="jsonModalArea" rows="10" dir="ltr" 
+                class="w-full bg-brand-dark border border-brand-border rounded-xl p-3 text-xs font-mono text-[#818cf8] focus:outline-none focus:border-[#616afc]"></textarea>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button onclick="closeJsonModal()" class="bg-brand-dark hover:bg-brand-border text-white text-xs px-4 py-2 rounded-xl font-bold transition">إلغاء</button>
+                <button id="jsonModalActionBtn" onclick="submitJsonModal()" class="bg-[#616afc] hover:bg-[#4f56e2] text-white text-xs px-4 py-2 rounded-xl font-bold transition">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#616afc] text-white text-xs font-bold px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 opacity-0 pointer-events-none translate-y-4 flex items-center gap-2 z-50">
+        <i class="fa-solid fa-circle-check text-base"></i> <span id="toastMessage">تمت العملية بنجاح!</span>
+    </div>
+
+    <script>
+        let state = {
+            title: "سيرفر مجتمع bucky - أهلاً بكم!",
+            titleUrl: "http://bucky.opik.net/",
+            author: "إدارة السيرفر الرسمية",
+            authorIcon: "https://em-content.zobj.net/source/microsoft-teams/337/high-voltage_26a1.png",
+            description: "مرحباً بكم في مجتمعنا! استخدم الأزرار التفاعلية أدناه للانتقال السريع إلى السيرفر أو الموقع الرسمي بكفاءة وسرعة عالية.",
+            color: "#616afc",
+            thumbnail: "https://em-content.zobj.net/source/microsoft-teams/337/high-voltage_26a1.png",
+            banner: "https://placehold.co/600x200/121723/616afc?text=bucky.opik.net+V2+Embed",
+            footer: "مقدم من bucky.opik.net • اضغط الأزرار للانتقال",
+            showTimestamp: true,
+            fields: [],
+            buttons: [
+                { id: 1, label: "الانضمام إلى السيرفر", url: "https://discord.gg", emoji: "🚀" },
+                { id: 2, label: "الموقع الرسمي", url: "http://bucky.opik.net/", emoji: "⚡" }
+            ]
+        };
+
+        const MY_DOMAIN = "http://bucky.opik.net";
+
+        const PRESETS = {
+            default: {
+                title: "سيرفر مجتمع bucky - أهلاً بكم!",
+                titleUrl: "http://bucky.opik.net/",
+                author: "إدارة السيرفر الرسمية",
+                authorIcon: "https://em-content.zobj.net/source/microsoft-teams/337/high-voltage_26a1.png",
+                description: "مرحباً بكم في مجتمعنا! استخدم الأزرار التفاعلية أدناه للانتقال السريع إلى السيرفر أو الموقع الرسمي بكفاءة وسرعة عالية.",
+                color: "#616afc",
+                thumbnail: "https://em-content.zobj.net/source/microsoft-teams/337/high-voltage_26a1.png",
+                banner: "https://placehold.co/600x200/121723/616afc?text=bucky.opik.net+V2+Embed",
+                footer: "مقدم من bucky.opik.net • اضغط الأزرار للانتقال",
+                showTimestamp: true,
+                fields: [],
+                buttons: [
+                    { id: 1, label: "الانضمام إلى السيرفر", url: "https://discord.gg", emoji: "🚀" },
+                    { id: 2, label: "الموقع الرسمي", url: "http://bucky.opik.net/", emoji: "⚡" }
+                ]
+            },
+            community: {
+                title: "دعوة الانضمام لسيرفر الفتوات 🎮",
+                titleUrl: "https://discord.gg",
+                author: "مجتمع الألعاب العربي",
+                authorIcon: "https://em-content.zobj.net/source/microsoft-teams/337/crown_1f451.png",
+                description: "انضم لأفضل مجتمع قيمنق عربي، فعاليات وسحوبات أسبوعية مستمرة للجميع!",
+                color: "#5865F2",
+                thumbnail: "https://em-content.zobj.net/source/microsoft-teams/337/party-popper_1f389.png",
+                banner: "https://placehold.co/600x200/121723/5865F2?text=Join+Community",
+                footer: "الروم الرسمي • أهلاً بالجميع",
+                showTimestamp: true,
+                fields: [{ id: 1, name: "عدد الاعضاء", value: "+15,000 عضو", inline: true }],
+                buttons: [{ id: 1, label: "دخول السيرفر الان", url: "https://discord.gg", emoji: "👑" }]
+            },
+            store: {
+                title: "متجر الخدمات والعروض المميزة 🛒",
+                titleUrl: "http://bucky.opik.net/",
+                author: "متجر Bucky الأصلي",
+                authorIcon: "https://em-content.zobj.net/source/microsoft-teams/337/shopping-cart_1f6d2.png",
+                description: "خصومات خاصة تصل إلى 40% على كافة المنتجات هذا الشهر!",
+                color: "#22c55e",
+                thumbnail: "https://em-content.zobj.net/source/microsoft-teams/337/gem-stone_1f48e.png",
+                banner: "https://placehold.co/600x200/121723/22c55e?text=Special+Offers",
+                footer: "تسليم فوري وتلقائي 100%",
+                showTimestamp: true,
+                fields: [],
+                buttons: [{ id: 1, label: "شراء المنتجات", url: "http://bucky.opik.net/", emoji: "💳" }]
+            },
+            social: {
+                title: "تابعنا على منصات التواصل الاجتماعي 📱",
+                titleUrl: "http://bucky.opik.net/",
+                author: "صانع المحتوى",
+                authorIcon: "https://em-content.zobj.net/source/microsoft-teams/337/video-camera_1f4f9.png",
+                description: "اشترك في القناة وشاهد أحدث الفيديوهات والتحديثات اليومية أولاً بأول.",
+                color: "#ef4444",
+                thumbnail: "https://em-content.zobj.net/source/microsoft-teams/337/clapper-board_1f3ac.png",
+                banner: "https://placehold.co/600x200/121723/ef4444?text=Follow+Us",
+                footer: "قنواتنا الرسمية",
+                showTimestamp: false,
+                fields: [],
+                buttons: [
+                    { id: 1, label: "قناة اليوتيوب", url: "https://youtube.com", emoji: "🔴" },
+                    { id: 2, label: "حساب انستغرام", url: "https://instagram.com", emoji: "📸" }
+                ]
+            }
+        };
+
+        function initListeners() {
+            document.getElementById('embedTitle').addEventListener('input', (e) => { state.title = e.target.value; updateAll(); });
+            document.getElementById('embedTitleUrl').addEventListener('input', (e) => { state.titleUrl = e.target.value; updateAll(); });
+            document.getElementById('embedAuthor').addEventListener('input', (e) => { state.author = e.target.value; updateAll(); });
+            document.getElementById('embedAuthorIcon').addEventListener('input', (e) => { state.authorIcon = e.target.value; updateAll(); });
+            document.getElementById('embedDescription').addEventListener('input', (e) => { state.description = e.target.value; updateAll(); });
+            document.getElementById('embedThumbnail').addEventListener('input', (e) => { state.thumbnail = e.target.value; updateAll(); });
+            document.getElementById('embedBanner').addEventListener('input', (e) => { state.banner = e.target.value; updateAll(); });
+            document.getElementById('embedFooter').addEventListener('input', (e) => { state.footer = e.target.value; updateAll(); });
+            document.getElementById('embedTimestampToggle').addEventListener('change', (e) => { state.showTimestamp = e.target.checked; updateAll(); });
+
+            const picker = document.getElementById('embedColorPicker');
+            const hexInput = document.getElementById('embedColorHex');
+
+            picker.addEventListener('input', (e) => {
+                state.color = e.target.value;
+                hexInput.value = e.target.value;
+                updateAll();
+            });
+
+            hexInput.addEventListener('input', (e) => {
+                if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                    state.color = e.target.value;
+                    picker.value = e.target.value;
+                    updateAll();
+                }
+            });
+
+            loadFromHash();
+        }
+
+        function switchCategory(cat) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-[#616afc]', 'text-white');
+                btn.classList.add('bg-brand-panel', 'border', 'border-brand-border', 'text-zinc-400');
+            });
+
+            document.querySelectorAll('.category-section').forEach(sec => sec.classList.add('hidden'));
+
+            const activeNav = document.getElementById(`nav-${cat}`);
+            const activeSec = document.getElementById(`section-${cat}`);
+
+            if (activeNav) {
+                activeNav.classList.add('bg-[#616afc]', 'text-white');
+                activeNav.classList.remove('bg-brand-panel', 'border', 'border-brand-border', 'text-zinc-400');
+            }
+            if (activeSec) {
+                activeSec.classList.remove('hidden');
+            }
+        }
+
+        function setPresetColor(hex) {
+            state.color = hex;
+            document.getElementById('embedColorPicker').value = hex;
+            document.getElementById('embedColorHex').value = hex;
+            updateAll();
+        }
+
+        function loadPreset(key) {
+            if (PRESETS[key]) {
+                state = JSON.parse(JSON.stringify(PRESETS[key]));
+                syncInputsWithState();
+                updateAll();
+                showToast("تم تحميل النموذج بنجاح!");
+            }
+        }
+
+        function resetToDefaults() {
+            loadPreset('default');
+        }
+
+        function syncInputsWithState() {
+            document.getElementById('embedTitle').value = state.title || '';
+            document.getElementById('embedTitleUrl').value = state.titleUrl || '';
+            document.getElementById('embedAuthor').value = state.author || '';
+            document.getElementById('embedAuthorIcon').value = state.authorIcon || '';
+            document.getElementById('embedDescription').value = state.description || '';
+            document.getElementById('embedColorPicker').value = state.color || '#616afc';
+            document.getElementById('embedColorHex').value = state.color || '#616afc';
+            document.getElementById('embedThumbnail').value = state.thumbnail || '';
+            document.getElementById('embedBanner').value = state.banner || '';
+            document.getElementById('embedFooter').value = state.footer || '';
+            document.getElementById('embedTimestampToggle').checked = state.showTimestamp !== false;
+
+            renderButtons();
+            renderFields();
+        }
+
+        function renderButtons() {
+            const container = document.getElementById('buttonsContainer');
+            container.innerHTML = '';
+
+            state.buttons.forEach((btn, index) => {
+                const div = document.createElement('div');
+                div.className = 'bg-brand-dark p-3 rounded-xl border border-brand-border space-y-2 text-xs';
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-[#818cf8]">زر رقم ${index + 1}</span>
+                        ${state.buttons.length > 1 ? `<button onclick="removeButton(${btn.id})" class="text-rose-400 text-xs font-bold"><i class="fa-solid fa-trash"></i> حذف</button>` : ''}
+                    </div>
+                    <div class="grid grid-cols-12 gap-2">
+                        <div class="col-span-3">
+                            <input type="text" value="${btn.emoji || ''}" placeholder="😀" oninput="updateButton(${btn.id}, 'emoji', this.value)" class="w-full bg-brand-panel border border-brand-border rounded-lg p-2 text-center text-white">
+                        </div>
+                        <div class="col-span-9">
+                            <input type="text" value="${btn.label || ''}" placeholder="عنوان الزر" oninput="updateButton(${btn.id}, 'label', this.value)" class="w-full bg-brand-panel border border-brand-border rounded-lg p-2 text-white font-bold">
+                        </div>
+                        <div class="col-span-12">
+                            <input type="text" value="${btn.url || ''}" placeholder="رابط التوجيه (http://...)" dir="ltr" oninput="updateButton(${btn.id}, 'url', this.value)" class="w-full bg-brand-panel border border-brand-border rounded-lg p-2 text-zinc-300 font-mono text-[11px]">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addButton() {
+            if (state.buttons.length >= 5) {
+                showToast("الحد الأقصى هو 5 أزرار في ديسكورد!");
+                return;
+            }
+            state.buttons.push({ id: Date.now(), label: "زر جديد", url: MY_DOMAIN, emoji: "⚡" });
+            renderButtons();
+            updateAll();
+        }
+
+        function removeButton(id) {
+            state.buttons = state.buttons.filter(b => b.id !== id);
+            renderButtons();
+            updateAll();
+        }
+
+        function updateButton(id, field, value) {
+            const b = state.buttons.find(x => x.id === id);
+            if (b) { b[field] = value; updateAll(); }
+        }
+
+        function renderFields() {
+            const container = document.getElementById('fieldsContainer');
+            container.innerHTML = '';
+
+            state.fields.forEach((f, index) => {
+                const div = document.createElement('div');
+                div.className = 'bg-brand-dark p-3 rounded-xl border border-brand-border space-y-2 text-xs';
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-amber-400">حقل ${index + 1}</span>
+                        <button onclick="removeField(${f.id})" class="text-rose-400 text-xs font-bold"><i class="fa-solid fa-trash"></i> حذف</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" value="${f.name || ''}" placeholder="اسم الحقل" oninput="updateField(${f.id}, 'name', this.value)" class="bg-brand-panel border border-brand-border rounded-lg p-2 text-white font-bold">
+                        <input type="text" value="${f.value || ''}" placeholder="قيمة الحقل" oninput="updateField(${f.id}, 'value', this.value)" class="bg-brand-panel border border-brand-border rounded-lg p-2 text-zinc-300">
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addField() {
+            state.fields.push({ id: Date.now(), name: "العنوان", value: "القيمة", inline: true });
+            renderFields();
+            updateAll();
+        }
+
+        function removeField(id) {
+            state.fields = state.fields.filter(f => f.id !== id);
+            renderFields();
+            updateAll();
+        }
+
+        function updateField(id, field, value) {
+            const f = state.fields.find(x => x.id === id);
+            if (f) { f[field] = value; updateAll(); }
+        }
+
+        function insertMarkdown(prefix, suffix) {
+            const el = document.getElementById('embedDescription');
+            const start = el.selectionStart;
+            const end = el.selectionEnd;
+            const text = el.value;
+            const selected = text.substring(start, end) || 'نص';
+            el.value = text.substring(0, start) + prefix + selected + suffix + text.substring(end);
+            state.description = el.value;
+            updateAll();
+        }
+
+        function parseMarkdown(text) {
+            if (!text) return '';
+            let p = escapeHtml(text);
+            p = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            p = p.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            p = p.replace(/`(.*?)`/g, '<code>$1</code>');
+            p = p.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+            return p;
+        }
+
+        function updatePreview() {
+            document.getElementById('previewTitle').innerText = state.title || "العنوان";
+            document.getElementById('previewTitle').href = state.titleUrl || "#";
+
+            const authorBox = document.getElementById('previewAuthorBox');
+            if (state.author) {
+                authorBox.style.display = 'flex';
+                document.getElementById('previewAuthorText').innerText = state.author;
+                const authorImg = document.getElementById('previewAuthorImg');
+                if (state.authorIcon) {
+                    authorImg.style.display = 'block';
+                    authorImg.src = state.authorIcon;
+                } else { authorImg.style.display = 'none'; }
+            } else { authorBox.style.display = 'none'; }
+
+            document.getElementById('previewDescription').innerHTML = parseMarkdown(state.description || '');
+            document.getElementById('previewEmbedCard').style.borderRightColor = state.color || '#616afc';
+
+            const thumbBox = document.getElementById('previewThumbnailBox');
+            if (state.thumbnail) {
+                thumbBox.style.display = 'block';
+                document.getElementById('previewThumbnailImg').src = state.thumbnail;
+            } else { thumbBox.style.display = 'none'; }
+
+            const bannerBox = document.getElementById('previewBannerBox');
+            if (state.banner) {
+                bannerBox.style.display = 'block';
+                document.getElementById('previewBannerImg').src = state.banner;
+            } else { bannerBox.style.display = 'none'; }
+
+            // Fields
+            const fieldsGrid = document.getElementById('previewFieldsGrid');
+            if (state.fields && state.fields.length > 0) {
+                fieldsGrid.classList.remove('hidden');
+                fieldsGrid.innerHTML = '';
+                state.fields.forEach(f => {
+                    const d = document.createElement('div');
+                    d.className = 'col-span-6 space-y-0.5';
+                    d.innerHTML = `<div class="font-bold text-white text-[11px]">${escapeHtml(f.name)}</div><div class="text-[11px] text-discord-textLight">${parseMarkdown(f.value)}</div>`;
+                    fieldsGrid.appendChild(d);
+                });
+            } else { fieldsGrid.classList.add('hidden'); }
+
+            // Footer
+            document.getElementById('previewFooterText').innerText = state.footer || '';
+            document.getElementById('previewTimestampText').style.display = state.showTimestamp !== false ? 'inline' : 'none';
+
+            // Buttons Action Row
+            const btnList = document.getElementById('previewButtonsList');
+            btnList.innerHTML = '';
+            state.buttons.forEach(b => {
+                const a = document.createElement('a');
+                a.href = b.url || '#';
+                a.target = '_blank';
+                a.className = 'bg-[#313338] hover:bg-[#383a40] border border-[#3f4147] hover:border-[#616afc] text-white py-2 px-3 rounded-md flex items-center justify-between text-xs font-bold cursor-pointer transition';
+                a.innerHTML = `<div class="flex items-center gap-2"><span>${b.emoji || '🔗'}</span><span>${escapeHtml(b.label || 'زر')}</span></div><i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-discord-textMuted"></i>`;
+                btnList.appendChild(a);
+            });
+        }
+
+        function generateFinalUrl() {
+            const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+            const finalUrl = `${MY_DOMAIN}/#data=${encodedData}`;
+
+            document.getElementById('finalWorkingUrl').innerText = finalUrl;
+            document.getElementById('testDirectLinkBtn').href = finalUrl;
+            return finalUrl;
+        }
+
+        function copyFinalWorkingUrl() {
+            const url = generateFinalUrl();
+            copyTextToClipboard(url, "تم نسخ الرابط النهائي المباشر لـ Discord بنجاح!");
+        }
+
+        function copyTextToClipboard(text, msg) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => showToast(msg));
+            } else {
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    showToast(msg);
+                } catch (e) {
+                    showToast("تعذر النسخ التلقائي");
+                }
+                document.body.removeChild(ta);
+            }
+        }
+
+        function openJsonModal(mode) {
+            const modal = document.getElementById('jsonModal');
+            const area = document.getElementById('jsonModalArea');
+            const btn = document.getElementById('jsonModalActionBtn');
+
+            if (mode === 'export') {
+                area.value = JSON.stringify(state, null, 2);
+                area.readOnly = true;
+                btn.innerText = 'نسخ الكود';
+                btn.onclick = () => { copyTextToClipboard(area.value, "تم النسخ!"); closeJsonModal(); };
+            } else {
+                area.value = '';
+                area.readOnly = false;
+                btn.innerText = 'استيراد وتطبيق';
+                btn.onclick = () => {
+                    try {
+                        const parsed = JSON.parse(area.value);
+                        if (parsed) {
+                            state = Object.assign({}, state, parsed);
+                            syncInputsWithState();
+                            updateAll();
+                            showToast("تم استيراد المشروع بنجاح!");
+                            closeJsonModal();
+                        }
+                    } catch (e) { showToast("خطأ في قراءة JSON"); }
+                };
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeJsonModal() {
+            document.getElementById('jsonModal').classList.add('hidden');
+        }
+
+        function loadFromHash() {
+            try {
+                if (window.location.hash.includes('#data=')) {
+                    const raw = window.location.hash.replace('#data=', '');
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(raw))));
+                    if (decoded && decoded.title) {
+                        state = decoded;
+                        syncInputsWithState();
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 3000);
+        }
+
+        function updateAll() {
+            updatePreview();
+            generateFinalUrl();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
+        window.onload = function() {
+            initListeners();
+            renderButtons();
+            renderFields();
+            updateAll();
+        };
+    </script>
+</body>
+</html>
